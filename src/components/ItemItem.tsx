@@ -1,9 +1,10 @@
 import { getInventoryItemDef } from "@d2api/manifest-web";
-import { DestinyItemComponent, SocketPlugSources } from "bungie-api-ts/destiny2";
+import { DestinyItemComponent, TierType } from "bungie-api-ts/destiny2";
 import React from "react";
+import ExoticArmorItem from "src/components/item-types/ExoticArmorItem";
+import WeaponItem from "src/components/item-types/WeaponItem";
 import module from "src/components/ItemItem.module.scss";
-import { ExoticArmorIntrinsicSocket } from "src/logic/Hashes";
-import { BUNGIE } from "src/logic/Storage";
+import { ItemCategory } from "src/logic/Hashes";
 
 function ItemItem( props: {
 	item: DestinyItemComponent | undefined
@@ -15,23 +16,18 @@ function ItemItem( props: {
 	const item = props.item;
 	const def = getInventoryItemDef( item.itemHash );
 
-	const intrinsic = getInventoryItemDef(
-		def?.sockets?.socketEntries.find(
-			s => s.socketTypeHash === ExoticArmorIntrinsicSocket
-				&& ( s.plugSources & SocketPlugSources.ReusablePlugItems ),
-		)!.singleInitialItemHash,
-	);
+	const isExoticArmor =
+		      def?.inventory?.tierType === TierType.Exotic
+		      && def.itemCategoryHashes?.includes( ItemCategory.Armor );
 
-	return <div className={module.body}>
-		{def?.displayProperties.hasIcon ?
-			<div className={module.icon}><img src={BUNGIE + def.displayProperties.icon}
-			                                  alt={`Exotic Armor - ${def.displayProperties.name}`} /></div> : null
-		}
-		<div className={module.text}>
-			<div className={module.name}>{def?.displayProperties.name}</div>
-			<div className={module.description}>{intrinsic?.displayProperties.description}</div>
+	const isWeapon = def?.itemCategoryHashes?.includes( ItemCategory.Weapon );
+
+	return (
+		<div className={module.body}>
+			{isExoticArmor && <ExoticArmorItem def={def} />}
+			{isWeapon && <WeaponItem def={def} />}
 		</div>
-	</div>;
+	);
 }
 
 export default ItemItem;

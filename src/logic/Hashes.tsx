@@ -24,3 +24,12 @@ export const enum Quality {
 }
 
 export const ExoticArmorIntrinsicSocket = 965959289;
+
+export const enum ItemCategory {
+	Weapon = 1,
+	Armor  = 20
+}
+
+export const enum SocketCategory {
+	WeaponPerks = 4241085061
+}

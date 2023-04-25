@@ -2,4 +2,77 @@
 	display: flex;
 	flex-direction: column;
 	max-width: 500px;
+	border: 1px solid #777777;
+
+	border-radius: 10px;
+	position: relative;
+}
+
+
+.introWrapper {
+	position: relative;
+}
+
+.emblem {
+	top: 0;
+	left: 0;
+	right: 0;
+	width: 100%;
+	border-radius: 10px 10px 0 0;
+}
+
+
+.intro {
+	height: 100px;
+	z-index: 10;
+	top: 0;
+	left: 20%;
+	right: 0;
+	position: absolute;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+.name {
+	font-size: 2rem;
+	font-weight: bold;
+}
+
+.light {
+	font-size: 2rem;
+	margin-right: 20px;
+	color: #D5C148;
+	font-weight: bold;
+
+	&::before {
+		content: "✧";
+		display: inline-block;
+		font-size: 0.5em;
+		line-height: 0;
+		vertical-align: super;
+		margin: 0;
+	}
+}
+
+.class {
+	font-size: 1.5rem;
+}
+
+.content {
+	padding: 10px 20px 20px;
+}
+
+.items {
+	margin: 10px 0;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.divider {
+	width: 80%;
+	border: 0;
+	border-top: 1px solid #777777;
+	margin: 20px auto;
 }

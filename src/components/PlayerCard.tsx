@@ -10,7 +10,7 @@ import {
 import { DestinyProfileUserInfoCard } from "bungie-api-ts/destiny2/interfaces";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import ItemItem from "src/components/ItemItem";
-import { Bucket } from "src/logic/Hashes";
+import { Bucket, ItemCategory } from "src/logic/Hashes";
 import { $http, BUNGIE } from "src/logic/Storage";
 import module from "./PlayerCard.module.scss";
 
@@ -23,13 +23,14 @@ function getMainUserCard( setMembership: Dispatch<SetStateAction<DestinyProfileU
 		getAllMemberships: true,
 	} ).then( r => {
 		const response = r.Response;
-		console.log(r.Response);
+		console.log( r.Response );
 
 		const main = response.profiles.sort( ( a, b ) => {
 			return ( new Date( a.dateLastPlayed ) ).getTime() - ( new Date( b.dateLastPlayed ) ).getTime();
 		} )[0];
 
-		console.log( main );
+		// TODO what if profile list is empty?
+		// TODO what if API is down?
 
 		setMembership( main );
 	} );
@@ -37,10 +38,7 @@ function getMainUserCard( setMembership: Dispatch<SetStateAction<DestinyProfileU
 
 function getProfile( setProfile: Dispatch<SetStateAction<DestinyProfileResponse | undefined>>,
                      card: DestinyProfileUserInfoCard | undefined ) {
-	console.log( "Getting profile..." );
-	console.log( card );
 	if ( !card ) {
-		console.log( "Card null" );
 		return;
 	}
 
@@ -57,10 +55,7 @@ function getProfile( setProfile: Dispatch<SetStateAction<DestinyProfileResponse 
 
 function getCurrentCharacter( setCharacter: Dispatch<SetStateAction<string | undefined>>,
                               profile: DestinyProfileResponse | undefined ) {
-	console.log( "Getting character..." );
-	console.log( profile );
 	if ( !profile?.characters.data ) {
-		console.log( "Character null" );
 		return;
 	}
 
@@ -95,23 +90,44 @@ function PlayerCard( props: {
 		      ( b: Bucket ): DestinyItemComponent | undefined => equipment.find( s => s.bucketHash === b );
 
 	const getExoticArmor =
-		      (): DestinyItemComponent | undefined => equipment.find( s => [
-				      Bucket.Helmet,
-				      Bucket.Gauntlets,
-				      Bucket.Chest,
-				      Bucket.Legs,
-			      ].includes( s.bucketHash )
-			      && getInventoryItemDef( s.itemHash )?.inventory?.tierType === TierType.Exotic );
+		      (): DestinyItemComponent | undefined => equipment.find(
+			      s => {
+				      const def = getInventoryItemDef( s.itemHash );
 
-	const exotic = getExoticArmor();
+				      return def?.inventory?.tierType === TierType.Exotic
+					      && def.itemCategoryHashes?.includes( ItemCategory.Armor );
+			      },
+		      );
+
+	const renderItem = ( item: DestinyItemComponent | undefined ) => {
+		return item ? <ItemItem item={item} /> : null;
+	};
 
 	return (
 		<div className={module.body}>
-			<div><img alt={"Emblem"} src={BUNGIE + character.emblemBackgroundPath} /></div>
-			<div>{card?.displayName} - {getClassDef( character.classHash )?.displayProperties.name}</div>
-			<div>{character.light} Light</div>
-			<div>
-				{exotic ? <ItemItem item={exotic} /> : null}
+			<div className={module.introWrapper}>
+				<img alt={"Emblem"} className={module.emblem} src={BUNGIE + character.emblemBackgroundPath} />
+				<div className={module.intro}>
+					<div>
+						<div className={module.name}>{card?.displayName}</div>
+						<div className={module.class}>{getClassDef( character.classHash )?.displayProperties.name}</div>
+					</div>
+					<div>
+						<div className={module.light}>{character.light}</div>
+					</div>
+				</div>
+			</div>
+			<div className={module.content}>
+
+				<div className={module.items}>
+					{renderItem( getItemInBucket( Bucket.Kinetic ) )}
+					{renderItem( getItemInBucket( Bucket.Energy ) )}
+					{renderItem( getItemInBucket( Bucket.Power ) )}
+				</div>
+				<hr className={module.divider} />
+				<div className={module.items}>
+					{renderItem( getExoticArmor() )}
+				</div>
 			</div>
 		</div>
 	);

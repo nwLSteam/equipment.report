@@ -6,13 +6,13 @@ import { ExoticArmorIntrinsicSocket } from "src/logic/Hashes";
 import { BUNGIE } from "src/logic/Storage";
 
 function ExoticArmorItem( props: {
-	item: DestinyInventoryItemDefinition | undefined
+	def: DestinyInventoryItemDefinition
 } ) {
-	if ( !props.item ) {
+	const def = props.def;
+
+	if ( !def ) {
 		return null;
 	}
-
-	const def = props.item;
 
 	const intrinsic = getInventoryItemDef(
 		def?.sockets?.socketEntries.find(

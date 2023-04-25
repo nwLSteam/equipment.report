@@ -38,4 +38,4 @@ export function $tokens( set?: Tokens ) {
 	return set;
 }
 
-export const BUNGIE = 'https://www.bungie.net';
+export const BUNGIE = "https://www.bungie.net";
