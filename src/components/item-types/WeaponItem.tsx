@@ -2,8 +2,23 @@ import { getDamageTypeDef, getInventoryItemDef } from "@d2api/manifest-web";
 import { DestinyInventoryItemDefinition } from "bungie-api-ts/destiny2";
 import React from "react";
 import module from "src/components/ItemItem.module.scss";
+import Icon from "src/components/parts/Icon";
 import { SocketCategory } from "src/logic/Hashes";
 import { BUNGIE } from "src/logic/Storage";
+
+
+function getPerksFromWeaponDef( def: DestinyInventoryItemDefinition ) {
+	return def.sockets
+	          ?.socketEntries
+	          .filter(
+		          ( _, index ) =>
+			          def?.sockets
+			             ?.socketCategories
+			             .find( c => c?.socketCategoryHash === SocketCategory.WeaponPerks )
+			             ?.socketIndexes
+			             .includes( index ) )
+	          .slice( 0, -1 ); // remove kill tracker
+}
 
 function WeaponItem( props: {
 	def: DestinyInventoryItemDefinition | undefined
@@ -23,33 +38,27 @@ function WeaponItem( props: {
 	                                                            src={BUNGIE + energy.displayProperties.icon} />
 		: null;
 
-	const perkList = def.sockets
-	                    ?.socketEntries
-	                    .filter(
-		                    ( _, index ) =>
-			                    def?.sockets
-			                       ?.socketCategories
-			                       .find( c => c?.socketCategoryHash === SocketCategory.WeaponPerks )
-			                       ?.socketIndexes
-			                       .includes( index ) )
-	                    .slice( 0, -1 ) // remove kill tracker
-	                    .map(
-		                    socket => {
-			                    const def = getInventoryItemDef( socket?.singleInitialItemHash );
-			                    const perkName = def?.displayProperties.name;
-			                    const perkIcon = def?.displayProperties.hasIcon ?
-				                    <img className={module.perkIcon}
-				                         alt={def?.displayProperties.name}
-				                         src={BUNGIE + def.displayProperties.icon} /> : null;
+	const perkList = getPerksFromWeaponDef( def )?.map(
+		socket => {
+			const def = getInventoryItemDef( socket?.singleInitialItemHash );
 
-			                    return <div key={perkName} className={module.perk}>{perkIcon}{perkName}</div>;
-		                    },
-	                    );
+			if ( !def ) {
+				return null;
+			}
+
+			const perkName = def?.displayProperties.name;
+			const perkIcon = <Icon def={def} />;
+
+			return <div key={perkName} className={module.perk}>
+				<div className={module.perkIcon}>{perkIcon}</div>
+				{perkName}
+			</div>;
+		},
+	);
 
 	return <div className={module.body}>
 		{def?.displayProperties.hasIcon ?
-			<div className={module.icon}><img src={BUNGIE + def.displayProperties.icon}
-			                                  alt={`Exotic Armor - ${def.displayProperties.name}`} /></div> : null
+			<div className={module.icon}><Icon def={def} /></div> : null
 		}
 		<div className={module.text}>
 			<div className={module.name}>{energyIcon}{name}</div>
