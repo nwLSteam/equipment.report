@@ -1,0 +1,12 @@
+.body {
+	/* Text color */
+	list-style-type: none;
+
+	&::before {
+		/* Unicode bullet symbol */
+		content: "⚠ ";
+		/* Bullet color */
+		color: yellow;
+		padding-right: 0.5em;
+	}
+}
