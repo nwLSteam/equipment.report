@@ -1,12 +1,21 @@
 .body {
 	/* Text color */
 	list-style-type: none;
+	position: relative;
+	color: darken(yellow, 10%);
 
 	&::before {
+		display: block;
+		position: absolute;
 		/* Unicode bullet symbol */
 		content: "⚠ ";
 		/* Bullet color */
-		color: yellow;
+		color: darken(yellow, 10%);
 		padding-right: 0.5em;
+		margin-left: -20px;
 	}
+}
+
+.icon {
+	display: inline-block;
 }

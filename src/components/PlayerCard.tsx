@@ -10,8 +10,14 @@ import {
 import { DestinyProfileUserInfoCard } from "bungie-api-ts/destiny2/interfaces";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import ItemItem from "src/components/ItemItem";
+import InlineIcon from "src/components/parts/InlineIcon";
+import Warning from "src/components/Warning";
+import Warnings from "src/components/Warnings";
 import { Bucket, ItemCategory } from "src/logic/Hashes";
+import { modRules } from "src/logic/ModRules";
+import { getAllEquippedMods } from "src/logic/Mods";
 import { $http, BUNGIE } from "src/logic/Storage";
+import { getWeaponEnergies, intersect } from "src/logic/Summaries";
 import module from "./PlayerCard.module.scss";
 
 
@@ -23,7 +29,6 @@ function getMainUserCard( setMembership: Dispatch<SetStateAction<DestinyProfileU
 		getAllMemberships: true,
 	} ).then( r => {
 		const response = r.Response;
-		console.log( r.Response );
 
 		const main = response.profiles.sort( ( a, b ) => {
 			return ( new Date( a.dateLastPlayed ) ).getTime() - ( new Date( b.dateLastPlayed ) ).getTime();
@@ -49,6 +54,7 @@ function getProfile( setProfile: Dispatch<SetStateAction<DestinyProfileResponse 
 			DestinyComponentType.Profiles,
 			DestinyComponentType.Characters,
 			DestinyComponentType.CharacterEquipment,
+			DestinyComponentType.ItemSockets,
 		],
 	} ).then( r => setProfile( r.Response ) );
 }
@@ -77,11 +83,9 @@ function PlayerCard( props: {
 	useEffect( () => getProfile( setProfile, card ), [ card ] );
 	useEffect( () => getCurrentCharacter( setCharacterHash, profile ), [ profile ] );
 
-	if ( !characterHash ) {
+	if ( !characterHash || !profile || !card ) {
 		return <div>Loading character...</div>;
 	}
-
-	console.log( profile );
 
 	const character = profile?.characters?.data![characterHash]!;
 	const equipment = profile?.characterEquipment.data![characterHash].items!;
@@ -103,13 +107,16 @@ function PlayerCard( props: {
 		return item ? <ItemItem item={item} /> : null;
 	};
 
+	const mods = getAllEquippedMods( card.membershipType, card.membershipId, profile, characterHash );
+	const weaponEnergies = getWeaponEnergies( equipment );
+
 	return (
 		<div className={module.body}>
 			<div className={module.introWrapper}>
 				<img alt={"Emblem"} className={module.emblem} src={BUNGIE + character.emblemBackgroundPath} />
 				<div className={module.intro}>
 					<div>
-						<div className={module.name}>{card?.displayName}</div>
+						<div className={module.name}>{card.displayName}</div>
 						<div className={module.class}>{getClassDef( character.classHash )?.displayProperties.name}</div>
 					</div>
 					<div>
@@ -118,7 +125,25 @@ function PlayerCard( props: {
 				</div>
 			</div>
 			<div className={module.content}>
+				<Warnings>
+					{mods.map( m => {
+						const buffs = modRules[m.hash]?.buffsWeaponEnergy;
 
+						if ( !buffs ) {
+							return null;
+						}
+
+						if ( intersect( weaponEnergies, buffs ).length > 0 ) {
+							return null;
+						}
+
+						return <Warning>
+							You have equipped <InlineIcon def={m} /> {m.displayProperties.name},
+							but no weapon can take advantage of this mod.
+						</Warning>;
+					} )}
+				</Warnings>
+				<hr className={module.divider} />
 				<div className={module.items}>
 					{renderItem( getItemInBucket( Bucket.Kinetic ) )}
 					{renderItem( getItemInBucket( Bucket.Energy ) )}
@@ -128,6 +153,16 @@ function PlayerCard( props: {
 				<div className={module.items}>
 					{renderItem( getExoticArmor() )}
 				</div>
+
+				{/*<Warnings>
+					{mods.map( m => <Warning>
+						<div key={m.displayProperties.name} className={item_module.perk}>
+							<div className={item_module.perkIcon}><Icon def={m} /></div>
+							{m.displayProperties.name}
+						</div>
+					</Warning> )}
+				</Warnings>
+				<hr className={module.divider} />*/}
 			</div>
 		</div>
 	);

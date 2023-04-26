@@ -1,11 +1,14 @@
 import React from "react";
 import { BUNGIE } from "src/logic/Storage";
 
-interface hasDisplayProperties {
+export interface hasDisplayProperties {
 	displayProperties: {
 		name?: string
 		hasIcon?: boolean,
 		icon?: string
+		iconSequences?: Array<{
+			frames: string[];
+		}>
 	};
 }
 
@@ -17,9 +20,14 @@ function Icon( props: {
 		return null;
 	}
 
+	const hasSequences = props.def.displayProperties.iconSequences;
+	const smallVersion = hasSequences ? hasSequences[1].frames : null;
+
+	const image = smallVersion ? BUNGIE + smallVersion : BUNGIE + props.def.displayProperties.icon;
+
 	const alt = props.alt ?? props.def.displayProperties.name ?? "Icon";
 
-	return <img src={BUNGIE + props.def.displayProperties.icon} alt={alt} />;
+	return <img src={image} alt={alt} />;
 }
 
 export default Icon;
