@@ -1,18 +1,19 @@
 import { getInventoryItemDef } from "@d2api/manifest-web";
-import { DestinyItemComponent } from "bungie-api-ts/destiny2";
+import { DamageType, DestinyItemComponent } from "bungie-api-ts/destiny2";
 import { Bucket } from "src/logic/Hashes";
 
-export function getWeaponEnergies( items: DestinyItemComponent[] ) {
+export function getWeaponEnergies( items: DestinyItemComponent[] ): DamageType[] {
 	return items.filter( i => [ Bucket.Kinetic, Bucket.Energy, Bucket.Power ].includes( i.bucketHash ) )
 	            .map( i => getInventoryItemDef( i.itemHash ) )
-	            .map( i => i?.damageTypes )
+	            .filter( i => i )
+	            .map( i => i!.damageTypes )
 	            .flat()
 	            .filter( function ( item, pos, self ) {
 		            return self.indexOf( item ) === pos; // uniqueness
 	            } );
 }
 
-export function intersect( array1: any[], array2: any[] ) {
+export function intersect<T>( array1: T[], array2: T[] ): T[] {
 	let result = [];
 	// Don't destroy the original arrays
 	let a = array1.slice( 0 );
@@ -27,7 +28,7 @@ export function intersect( array1: any[], array2: any[] ) {
 			b.pop();
 			bLast--;
 		} else /* they're equal */ {
-			result.push( a.pop() );
+			result.push( a.pop()! );
 			b.pop();
 			aLast--;
 			bLast--;

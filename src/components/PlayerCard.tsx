@@ -10,14 +10,10 @@ import {
 import { DestinyProfileUserInfoCard } from "bungie-api-ts/destiny2/interfaces";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import ItemItem from "src/components/ItemItem";
-import InlineIcon from "src/components/parts/InlineIcon";
-import Warning from "src/components/Warning";
 import Warnings from "src/components/Warnings";
+import { GeneratedWarnings } from "src/components/WarningsGenerator";
 import { Bucket, ItemCategory } from "src/logic/Hashes";
-import { modRules } from "src/logic/ModRules";
-import { getAllEquippedMods } from "src/logic/Mods";
 import { $http, BUNGIE } from "src/logic/Storage";
-import { getWeaponEnergies, intersect } from "src/logic/Summaries";
 import module from "./PlayerCard.module.scss";
 
 
@@ -74,7 +70,7 @@ function getCurrentCharacter( setCharacter: Dispatch<SetStateAction<string | und
 
 function PlayerCard( props: {
 	membershipId: string,
-} ) {
+} ): React.ReactElement | null {
 	const [ card, setCard ] = useState<DestinyProfileUserInfoCard | undefined>( undefined );
 	const [ profile, setProfile ] = useState<DestinyProfileResponse | undefined>( undefined );
 	const [ characterHash, setCharacterHash ] = useState<string | undefined>( undefined );
@@ -107,9 +103,6 @@ function PlayerCard( props: {
 		return item ? <ItemItem item={item} /> : null;
 	};
 
-	const mods = getAllEquippedMods( card.membershipType, card.membershipId, profile, characterHash );
-	const weaponEnergies = getWeaponEnergies( equipment );
-
 	return (
 		<div className={module.body}>
 			<div className={module.introWrapper}>
@@ -126,22 +119,10 @@ function PlayerCard( props: {
 			</div>
 			<div className={module.content}>
 				<Warnings>
-					{mods.map( m => {
-						const buffs = modRules[m.hash]?.buffsWeaponEnergy;
-
-						if ( !buffs ) {
-							return null;
-						}
-
-						if ( intersect( weaponEnergies, buffs ).length > 0 ) {
-							return null;
-						}
-
-						return <Warning>
-							You have equipped <InlineIcon def={m} /> {m.displayProperties.name},
-							but no weapon can take advantage of this mod.
-						</Warning>;
-					} )}
+					<GeneratedWarnings card={card}
+					                   profile={profile}
+					                   equipment={equipment}
+					                   characterHash={characterHash} />
 				</Warnings>
 				<hr className={module.divider} />
 				<div className={module.items}>
