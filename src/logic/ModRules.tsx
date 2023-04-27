@@ -1,15 +1,40 @@
 import { DamageType } from "bungie-api-ts/destiny2";
-import { getAllMods } from "src/logic/Mods";
 
-export const enum Raid {
-	LW     = "enhancements.season_outlaw",
-	Garden = "enhancements.raid_garden",
-	DSC    = "enhancements.raid_descent",
-	VoG    = "enhancements.raid_v520",
-	Vow    = "enhancements.raid_v600",
-	KF     = "enhancements.raid_v620",
-	RoN    = "enhancements.raid_v700",
+interface Raid {
+	modString: string,
+	activityHashes: number[]
 }
+
+export const Raids: Record<string, Raid> = {
+	LW: {
+		modString: "enhancements.season_outlaw",
+		activityHashes: [ 1661734046, 2122313384, 2214608156, 2214608157 ],
+	},
+	Garden: {
+		modString: "enhancements.raid_garden",
+		activityHashes: [ 2497200493, 2659723068, 3458480158, 3845997235 ],
+	},
+	DSC: {
+		modString: "enhancements.raid_descent",
+		activityHashes: [ 910380154, 3976949817 ],
+	},
+	VoG: {
+		modString: "enhancements.raid_v520",
+		activityHashes: [ 1485585878, 1681562271, 3022541210, 3711931140, 3881495763 ],
+	},
+	Vow: {
+		modString: "enhancements.raid_v600",
+		activityHashes: [ 1441982566, 2906950631, 3889634515, 4156879541, 4217492330 ],
+	},
+	KF: {
+		modString: "enhancements.raid_v620",
+		activityHashes: [ 1374392663, 1063970578, 2897223272, 2964135793, 3257594522 ],
+	},
+	RoN: {
+		modString: "enhancements.raid_v700",
+		activityHashes: [ 1191701339, 2381413764, 2918919505 ],
+	},
+};
 
 export const enum Weight {
 	Primary,
@@ -25,9 +50,9 @@ export interface ModRule {
 	buffsAmmo?: Weight[];
 }
 
-export function getModsForRaid( raid: Raid ) {
-	return getAllMods().slice().filter( m => m.plug?.plugCategoryIdentifier === raid );
-}
+// export function getModsForRaid( raid: Raid ) {
+// 	return getAllMods().slice().filter( m => m.plug?.plugCategoryIdentifier === raid );
+// }
 
 export const modRules: Record<number, ModRule> = {
 	2793473444: {

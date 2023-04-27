@@ -14,9 +14,8 @@ export function getAllEquippedMods( type: BungieMembershipType,
 		      ( b: Bucket ): DestinyItemComponent | undefined => equipment.find( s => s.bucketHash === b );
 
 	const getModsFromArmor = () => {
-		const itemInstances: string[] = [ Bucket.Helmet, Bucket.Gauntlets, Bucket.Chest, Bucket.Legs ].map(
-			bucket => getItemInBucket( bucket )?.itemInstanceId!,
-		);
+		const itemInstances: string[] = [ Bucket.Helmet, Bucket.Gauntlets, Bucket.Chest, Bucket.Legs, Bucket.ClassItem ]
+			.map( bucket => getItemInBucket( bucket )?.itemInstanceId! );
 
 		return itemInstances.map( instanceId => profile.itemComponents.sockets.data![instanceId].sockets )
 		                    .flat()

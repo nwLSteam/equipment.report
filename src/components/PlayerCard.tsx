@@ -44,6 +44,8 @@ function getProfile( setProfile: Dispatch<SetStateAction<DestinyProfileResponse 
 			DestinyComponentType.Characters,
 			DestinyComponentType.CharacterEquipment,
 			DestinyComponentType.ItemSockets,
+			DestinyComponentType.Transitory,
+			DestinyComponentType.CharacterActivities,
 		],
 	} ).then( r => setProfile( r.Response ) );
 }
