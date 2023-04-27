@@ -1,19 +1,12 @@
-import { getClassDef, getInventoryItemDef } from "@d2api/manifest-web";
 import { Destiny2 } from "bungie-api-ts";
-import {
-	BungieMembershipType,
-	DestinyComponentType,
-	DestinyItemComponent,
-	DestinyProfileResponse,
-	TierType,
-} from "bungie-api-ts/destiny2";
+import { BungieMembershipType, DestinyComponentType, DestinyProfileResponse } from "bungie-api-ts/destiny2";
 import { DestinyProfileUserInfoCard } from "bungie-api-ts/destiny2/interfaces";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import ItemItem from "src/components/ItemItem";
-import Warnings from "src/components/Warnings";
-import { GeneratedWarnings } from "src/components/WarningsGenerator";
-import { Bucket, ItemCategory } from "src/logic/Hashes";
-import { $http, BUNGIE } from "src/logic/Storage";
+import React, { createContext, Dispatch, SetStateAction, useEffect, useState } from "react";
+import PlayerCardContent from "src/components/PlayerCardContent";
+import PlayerCardIntro from "src/components/PlayerCardIntro";
+import PlayerCardInventory from "src/components/PlayerCardInventory";
+import { PlayerCardWarnings } from "src/components/WarningsGenerator";
+import { $http } from "src/logic/Storage";
 import module from "./PlayerCard.module.scss";
 
 
@@ -68,6 +61,10 @@ function getCurrentCharacter( setCharacter: Dispatch<SetStateAction<string | und
 	setCharacter( character );
 }
 
+export const CardContext = createContext<DestinyProfileUserInfoCard | undefined>( undefined );
+export const ProfileContext = createContext<DestinyProfileResponse | undefined>( undefined );
+export const CharacterHashContext = createContext<string>( "undefined" );
+
 function PlayerCard( props: {
 	membershipId: string,
 } ): React.ReactElement | null {
@@ -83,68 +80,20 @@ function PlayerCard( props: {
 		return <div>Loading character...</div>;
 	}
 
-	const character = profile?.characters?.data![characterHash]!;
-	const equipment = profile?.characterEquipment.data![characterHash].items!;
-
-	const getItemInBucket =
-		      ( b: Bucket ): DestinyItemComponent | undefined => equipment.find( s => s.bucketHash === b );
-
-	const getExoticArmor =
-		      (): DestinyItemComponent | undefined => equipment.find(
-			      s => {
-				      const def = getInventoryItemDef( s.itemHash );
-
-				      return def?.inventory?.tierType === TierType.Exotic
-					      && def.itemCategoryHashes?.includes( ItemCategory.Armor );
-			      },
-		      );
-
-	const renderItem = ( item: DestinyItemComponent | undefined ) => {
-		return item ? <ItemItem item={item} /> : null;
-	};
-
 	return (
 		<div className={module.body}>
-			<div className={module.introWrapper}>
-				<img alt={"Emblem"} className={module.emblem} src={BUNGIE + character.emblemBackgroundPath} />
-				<div className={module.intro}>
-					<div>
-						<div className={module.name}>{card.displayName}</div>
-						<div className={module.class}>{getClassDef( character.classHash )?.displayProperties.name}</div>
-					</div>
-					<div>
-						<div className={module.light}>{character.light}</div>
-					</div>
-				</div>
-			</div>
-			<div className={module.content}>
-				<Warnings>
-					<GeneratedWarnings card={card}
-					                   profile={profile}
-					                   equipment={equipment}
-					                   characterHash={characterHash} />
-				</Warnings>
-				<hr className={module.divider} />
-				<div className={module.items}>
-					{renderItem( getItemInBucket( Bucket.Kinetic ) )}
-					{renderItem( getItemInBucket( Bucket.Energy ) )}
-					{renderItem( getItemInBucket( Bucket.Power ) )}
-				</div>
-				<hr className={module.divider} />
-				<div className={module.items}>
-					{renderItem( getExoticArmor() )}
-				</div>
-
-				{/*<Warnings>
-					{mods.map( m => <Warning>
-						<div key={m.displayProperties.name} className={item_module.perk}>
-							<div className={item_module.perkIcon}><Icon def={m} /></div>
-							{m.displayProperties.name}
-						</div>
-					</Warning> )}
-				</Warnings>
-				<hr className={module.divider} />*/}
-			</div>
+			<CardContext.Provider value={card}>
+				<ProfileContext.Provider value={profile}>
+					<CharacterHashContext.Provider value={characterHash}>
+						<PlayerCardIntro />
+						<PlayerCardContent>
+							<PlayerCardWarnings />
+							<hr className={module.divider} />
+							<PlayerCardInventory />
+						</PlayerCardContent>
+					</CharacterHashContext.Provider>
+				</ProfileContext.Provider>
+			</CardContext.Provider>
 		</div>
 	);
 }

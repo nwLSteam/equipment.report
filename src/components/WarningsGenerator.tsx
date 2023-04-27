@@ -1,13 +1,9 @@
-import {
-	DamageType,
-	DestinyInventoryItemDefinition,
-	DestinyItemComponent,
-	DestinyProfileResponse,
-} from "bungie-api-ts/destiny2";
-import { DestinyProfileUserInfoCard } from "bungie-api-ts/destiny2/interfaces";
+import { DamageType, DestinyInventoryItemDefinition } from "bungie-api-ts/destiny2";
 import React, { createContext, useContext } from "react";
 import InlineIcon from "src/components/parts/InlineIcon";
+import { CardContext, CharacterHashContext, ProfileContext } from "src/components/PlayerCard";
 import Warning from "src/components/Warning";
+import Warnings from "src/components/Warnings";
 import { modRules } from "src/logic/ModRules";
 import { getAllEquippedMods } from "src/logic/Mods";
 import { getWeaponEnergies, intersect } from "src/logic/Summaries";
@@ -15,24 +11,27 @@ import { getWeaponEnergies, intersect } from "src/logic/Summaries";
 let ModContext = createContext<DestinyInventoryItemDefinition[]>( [] );
 let EquippedWeaponEnergiesContext = createContext<DamageType[]>( [] );
 
-export function GeneratedWarnings( props: {
-	card: DestinyProfileUserInfoCard
-	profile: DestinyProfileResponse
-	equipment: DestinyItemComponent[]
-	characterHash: string
-} ): React.ReactElement | null {
-	const mods = getAllEquippedMods( props.card.membershipType,
-	                                 props.card.membershipId,
-	                                 props.profile,
-	                                 props.characterHash );
-	const weaponEnergies = getWeaponEnergies( props.equipment );
+export function PlayerCardWarnings(): React.ReactElement | null {
+	const card = useContext( CardContext );
+	const characterHash = useContext( CharacterHashContext );
+	const profile = useContext( ProfileContext );
+
+	const equipment = profile?.characterEquipment.data![characterHash].items!;
+
+	const mods = getAllEquippedMods( card!.membershipType,
+	                                 card!.membershipId,
+	                                 profile!,
+	                                 characterHash );
+	const weaponEnergies = getWeaponEnergies( equipment );
 
 	return (
-		<ModContext.Provider value={mods}>
-			<EquippedWeaponEnergiesContext.Provider value={weaponEnergies}>
-				<EnergyNotAligningWithWeaponsWarnings />
-			</EquippedWeaponEnergiesContext.Provider>
-		</ModContext.Provider>
+		<Warnings>
+			<ModContext.Provider value={mods}>
+				<EquippedWeaponEnergiesContext.Provider value={weaponEnergies}>
+					<EnergyNotAligningWithWeaponsWarnings />
+				</EquippedWeaponEnergiesContext.Provider>
+			</ModContext.Provider>
+		</Warnings>
 	);
 }
 
