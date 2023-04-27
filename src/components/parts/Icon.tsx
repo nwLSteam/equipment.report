@@ -21,7 +21,7 @@ function Icon( props: {
 	}
 
 	const hasSequences = props.def.displayProperties.iconSequences;
-	const smallVersion = hasSequences ? hasSequences[1].frames : null;
+	const smallVersion = hasSequences ? hasSequences[0].frames : null;
 
 	const image = smallVersion ? BUNGIE + smallVersion : BUNGIE + props.def.displayProperties.icon;
 

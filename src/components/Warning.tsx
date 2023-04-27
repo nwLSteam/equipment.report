@@ -1,8 +1,17 @@
 import React from "react";
 import module from "./Warning.module.scss";
 
-function Warning( props: React.PropsWithChildren ) {
-	return <li className={module.body}>
+export enum Severity {
+	Hint         = "hint",
+	Warning      = "warning",
+	HeavyWarning = "heavyWarning",
+	Critical     = "critical"
+}
+
+function Warning( props: React.PropsWithChildren<{
+	severity: Severity
+}> ) {
+	return <li className={module[props.severity]}>
 		{props.children}
 	</li>;
 }
