@@ -5,6 +5,7 @@ import React, { createContext, Dispatch, SetStateAction, useEffect, useState } f
 import PlayerCardContent from "src/components/PlayerCardContent";
 import PlayerCardIntro from "src/components/PlayerCardIntro";
 import PlayerCardInventory from "src/components/PlayerCardInventory";
+import PlayerCardSubclass from "src/components/PlayerCardSubclass";
 import { PlayerCardWarnings } from "src/components/PlayerCardWarnings";
 import { $http } from "src/logic/Storage";
 import module from "./PlayerCard.module.scss";
@@ -90,6 +91,7 @@ function PlayerCard( props: {
 						<PlayerCardIntro />
 						<PlayerCardContent>
 							<PlayerCardWarnings />
+							<PlayerCardSubclass />
 							<hr className={module.divider} />
 							<PlayerCardInventory />
 						</PlayerCardContent>

@@ -1,0 +1,22 @@
+.body {
+	display: grid;
+	grid-template-columns: 2fr 3fr 3fr;
+}
+
+.icon {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 5px;
+
+	 img {
+		 max-width: 100%;
+	 }
+}
+
+.perks {
+	font-size: 0.8rem;
+	list-style: none;
+	padding: 0;
+	margin: 0 0 0 10px;
+}
