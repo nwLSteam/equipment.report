@@ -27,10 +27,12 @@ function PlayerCardSubclass() {
 	                                             .filter( s => s.isEnabled && s.isVisible )!;
 
 
-	const perkToListEntry = (s :  DestinyItemSocketState) =>
-		<li><InlineIcon def={getInventoryItemDef( s.plugHash )!} /> {
-		getInventoryItemDef( s.plugHash )?.displayProperties.name
-	}</li>
+	const perkToListEntry = ( s: DestinyItemSocketState ) =>
+		<li key={s.plugHash}>
+			<InlineIcon def={getInventoryItemDef( s.plugHash )!} /> {
+			getInventoryItemDef( s.plugHash )?.displayProperties.name
+		}
+		</li>;
 
 
 	return <div className={module.body}>
@@ -39,10 +41,10 @@ function PlayerCardSubclass() {
 			<div className={module.name}>{subclassName}</div>
 		</div>
 		<div className={module.text}>
-			<ul className={module.perks}>{subclassPlugs.slice(0,4).map(perkToListEntry)}</ul>
+			<ul className={module.perks}>{subclassPlugs.slice( 0, 4 ).map( perkToListEntry )}</ul>
 		</div>
 		<div className={module.text}>
-			<ul className={module.perks}>{subclassPlugs.slice(4,8).map(perkToListEntry)}</ul>
+			<ul className={module.perks}>{subclassPlugs.slice( 4, 8 ).map( perkToListEntry )}</ul>
 		</div>
 	</div>;
 }

@@ -33,8 +33,9 @@ function getMainUserCard( setMembership: Dispatch<SetStateAction<DestinyProfileU
 }
 
 function getProfile( setProfile: Dispatch<SetStateAction<DestinyProfileResponse | undefined>>,
+                     currentProfile: DestinyProfileResponse | undefined,
                      card: DestinyProfileUserInfoCard | undefined ) {
-	if ( !card ) {
+	if ( !card || currentProfile ) {
 		return;
 	}
 
@@ -77,15 +78,18 @@ function PlayerCard( props: {
 	const [ characterHash, setCharacterHash ] = useState<string | undefined>( undefined );
 
 	useEffect( () => getMainUserCard( setCard, props.membershipId ), [ props.membershipId ] );
-	useEffect( () => getProfile( setProfile, card ), [ card ] );
+	useEffect( () => getProfile( setProfile, profile, card ), [ card, profile ] );
 	useEffect( () => getCurrentCharacter( setCharacterHash, profile ), [ profile ] );
 
 	if ( !characterHash || !profile || !card ) {
-		return <Loading>Loading character...</Loading>;
+		return <div className={module.loading}><Loading>Loading character...</Loading></div>;
 	}
 
 	return (
 		<div className={module.body}>
+			<button className={module.refresh}
+			        onClick={() => setProfile( undefined )}>Refresh
+			</button>
 			<CardContext.Provider value={card}>
 				<ProfileContext.Provider value={profile}>
 					<CharacterHashContext.Provider value={characterHash}>

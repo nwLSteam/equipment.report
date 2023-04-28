@@ -8,6 +8,25 @@
 	position: relative;
 }
 
+.loading {
+	@extend .body;
+	padding: 30px;
+}
+
+.refresh {
+	appearance: none;
+	border: none;
+	border-radius: 10px 10px 0 0;
+	color: lightgray;
+	background-color: dimgray;
+	padding: 10px 0;
+
+	&:hover {
+		color: lightgreen;
+		background-color: grey;
+		cursor: pointer;
+	}
+}
 
 .introWrapper {
 	position: relative;
