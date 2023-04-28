@@ -87,9 +87,6 @@ function PlayerCard( props: {
 
 	return (
 		<div className={module.body}>
-			<button className={module.refresh}
-			        onClick={() => setProfile( undefined )}>Refresh
-			</button>
 			<CardContext.Provider value={card}>
 				<ProfileContext.Provider value={profile}>
 					<CharacterHashContext.Provider value={characterHash}>
@@ -103,6 +100,9 @@ function PlayerCard( props: {
 					</CharacterHashContext.Provider>
 				</ProfileContext.Provider>
 			</CardContext.Provider>
+			<button className={module.refresh}
+			        onClick={() => setProfile( undefined )}>Refresh
+			</button>
 		</div>
 	);
 }
