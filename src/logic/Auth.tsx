@@ -2,15 +2,15 @@ import { Buffer } from "buffer";
 import { $tokens } from "src/logic/Storage";
 
 export const API_KEY = "4b9a34b00923477da2d2b8d8a042b96f";
-export const CLIENT_ID: string = "40593";
-export const CLIENT_SECRET: string = "x.jr52ZqlkBWhr8R00ZZiIFPdLxJvKJU910UNjM3P00";
+const CLIENT_ID: string = "40593";
+const CLIENT_SECRET: string = "x.jr52ZqlkBWhr8R00ZZiIFPdLxJvKJU910UNjM3P00";
 const AUTH_HEADER_VALUE = `Basic ${Buffer.from( `${CLIENT_ID}:${CLIENT_SECRET}` ).toString( "base64" )}`;
 const AUTH_FORWARD_URL = `https://www.bungie.net/en/OAuth/Authorize?client_id=${CLIENT_ID}&response_type=code`;
 const TOKEN_ENDPOINT = "https://www.bungie.net/platform/app/oauth/token/";
 
 const REFRESH_EPSILON = 30 * 60 * 1000; // 30 minutes
 
-export interface TokenResponse {
+interface TokenResponse {
 	access_token: string,
 	token_type: "Bearer",
 	expires_in: number,
@@ -27,7 +27,13 @@ export interface Tokens {
 	membership_id: string;
 }
 
-export function getTokenObjectFromTokenResponse( obj: TokenResponse ) {
+export const enum AuthState {
+	AUTHENTICATED,
+	NOT_AUTHENTICATED,
+	UNDEFINED
+}
+
+function getTokenObjectFromTokenResponse( obj: TokenResponse ) {
 	return {
 		access_token: obj.access_token,
 		refresh_token: obj.refresh_token,
@@ -37,12 +43,12 @@ export function getTokenObjectFromTokenResponse( obj: TokenResponse ) {
 	};
 }
 
-export function saveTokensToLocalStorage( obj: Tokens ) {
+function saveTokensToLocalStorage( obj: Tokens ) {
 	localStorage.setItem( "tokens", JSON.stringify( obj ) );
 	$tokens( obj );
 }
 
-export function loadTokensFromLocalStorage(): Tokens | null {
+function loadTokensFromLocalStorage(): Tokens | null {
 	let token_string = localStorage.getItem( "tokens" );
 	if ( !token_string ) {
 		return null;
@@ -61,7 +67,7 @@ function deleteTokensFromLocalStorage() {
 	localStorage.removeItem( "tokens" );
 }
 
-export function getResponseCode(): string | null {
+function getResponseCode(): string | null {
 	const siteUrl = window.location.search;
 	const urlParams = new URLSearchParams( siteUrl );
 	return urlParams.get( "code" );
@@ -71,56 +77,46 @@ export function forwardToAuthentication() {
 	window.location.replace( AUTH_FORWARD_URL );
 }
 
-export function isAccessTokenExpired( obj: Tokens ) {
+function isAccessTokenExpired( obj: Tokens ) {
 	return Date.now() + REFRESH_EPSILON > obj.access_expires.getTime();
 }
 
-export function isRefreshTokenExpired( obj: Tokens ) {
+function isRefreshTokenExpired( obj: Tokens ) {
 	return Date.now() + REFRESH_EPSILON > obj.refresh_expires.getTime();
 }
 
-export const enum AuthState {
-	AUTHENTICATED,
-	NOT_AUTHENTICATED,
-	UNDEFINED
-}
-
-export async function authenticateViaCode( code: string ) {
-	const response = await fetch( TOKEN_ENDPOINT, {
+async function authenticateViaCode( code: string ) {
+	return fetch( TOKEN_ENDPOINT, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/x-www-form-urlencoded",
 			Authorization: AUTH_HEADER_VALUE,
 		},
 		body: `grant_type=authorization_code&code=${code}`,
-	} );
-
-	const status = response.status;
-	const text = await response.text();
-
-	return {
-		success: status === 200,
-		response: JSON.parse( text ),
-	};
+	} ).then( async response => ( {
+		success: response.status === 200,
+		response: JSON.parse( await response.text() ),
+	} ) ).catch( ( e: any ) => ( {
+		success: false,
+		response: e.message ?? "Unknown error",
+	} ) );
 }
 
-export async function refreshTokens( tokens: Tokens ) {
-	const response = await fetch( TOKEN_ENDPOINT, {
+async function refreshTokens( tokens: Tokens ) {
+	return fetch( TOKEN_ENDPOINT, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/x-www-form-urlencoded",
 			Authorization: AUTH_HEADER_VALUE,
 		},
 		body: `grant_type=refresh_token&refresh_token=${tokens.refresh_token}`,
-	} );
-
-	const status = response.status;
-	const text = await response.text();
-
-	return {
-		success: status === 200,
-		response: JSON.parse( text ),
-	};
+	} ).then( async response => ( {
+		success: response.status === 200,
+		response: JSON.parse( await response.text() ),
+	} ) ).catch( ( e: any ) => ( {
+		success: false,
+		response: e.message ?? "Unknown error",
+	} ) );
 }
 
 
@@ -128,16 +124,18 @@ export default async function handleAuthFlow(): Promise<AuthState> {
 	const code = getResponseCode();
 
 	if ( code ) {
-		console.log( "we got a code back, we need to auth" );
+		console.log( "[AuthFlow] We got a code back, we need to auth" );
 
-		console.log( "do auth request here" );
 		const auth = await authenticateViaCode( code );
 
 		if ( !auth.success ) {
+			console.warn( `[AuthFlow] We failed, deleting tokens: ${auth.response}` );
 			deleteTokensFromLocalStorage();
 			// eslint-disable-next-line no-restricted-globals
 			window.location.replace( location.pathname );
 		}
+
+		console.log( "[AuthFlow] Authenticated, saving tokens" );
 
 		const tokens = getTokenObjectFromTokenResponse( auth.response );
 		saveTokensToLocalStorage( tokens );
@@ -146,36 +144,38 @@ export default async function handleAuthFlow(): Promise<AuthState> {
 		window.location.replace( location.pathname );
 	}
 
-	console.log( "We have no code, let's check for tokens" );
+	console.log( "[AuthFlow] We have no code, checking for tokens" );
 	const tokens = loadTokensFromLocalStorage();
 
 	if ( !tokens ) {
-		console.log( "No authentication, we need to show the button" );
+		console.log( "[AuthFlow] No authentication" );
 		return AuthState.NOT_AUTHENTICATED;
 	}
 
+	console.log( "[AuthFlow] Tokens loaded" );
+
 	if ( isRefreshTokenExpired( tokens ) ) {
-		console.log( "Tokens are completely invalid" );
-		console.log( "Throw them away and show a button" );
+		console.log( "[AuthFlow] Tokens are completely invalid" );
+		console.log( "[AuthFlow] Throwing them away" );
 		deleteTokensFromLocalStorage();
 		return AuthState.NOT_AUTHENTICATED;
 	}
 
 	if ( !isAccessTokenExpired( tokens ) ) {
-		console.log( "We believe the system, tokens valid" );
+		console.log( "[AuthFlow] Authenticated" );
 		return AuthState.AUTHENTICATED;
 	}
 
-	console.log( "We need to refresh our tokens" );
+	console.log( "[AuthFlow] We need to refresh the auth token" );
 	const auth = await refreshTokens( tokens );
 
 	if ( !auth.success ) {
-		console.log( "We failed" );
+		console.warn( `[AuthFlow] We failed, deleting tokens: ${auth.response}` );
 		deleteTokensFromLocalStorage();
 		return AuthState.NOT_AUTHENTICATED;
 	}
 
-	console.log( "We succeeded" );
+	console.log( "[AuthFlow] We succeeded, authenticated" );
 	const new_tokens = getTokenObjectFromTokenResponse( auth.response );
 	saveTokensToLocalStorage( new_tokens );
 

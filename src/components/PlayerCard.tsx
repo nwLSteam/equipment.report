@@ -2,6 +2,7 @@ import { Destiny2 } from "bungie-api-ts";
 import { BungieMembershipType, DestinyComponentType, DestinyProfileResponse } from "bungie-api-ts/destiny2";
 import { DestinyProfileUserInfoCard } from "bungie-api-ts/destiny2/interfaces";
 import React, { createContext, Dispatch, SetStateAction, useEffect, useState } from "react";
+import Loading from "src/components/Loading";
 import PlayerCardContent from "src/components/PlayerCardContent";
 import PlayerCardIntro from "src/components/PlayerCardIntro";
 import PlayerCardInventory from "src/components/PlayerCardInventory";
@@ -80,7 +81,7 @@ function PlayerCard( props: {
 	useEffect( () => getCurrentCharacter( setCharacterHash, profile ), [ profile ] );
 
 	if ( !characterHash || !profile || !card ) {
-		return <div>Loading character...</div>;
+		return <Loading>Loading character...</Loading>;
 	}
 
 	return (

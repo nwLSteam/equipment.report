@@ -1,10 +1,10 @@
-import { loadDefs, setApiKey, verbose } from "@d2api/manifest-web";
+import { loadDefs, setApiKey } from "@d2api/manifest-web";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Content from "src/components/Content";
+import Loading from "src/components/Loading";
 import { API_KEY } from "src/logic/Auth";
 
 function loadManifest( setManifestLoaded: Dispatch<SetStateAction<boolean>> ) {
-	verbose(); // make the client chatty. if you want.
 	setApiKey( API_KEY );
 
 	// checks the API for the current version.
@@ -20,7 +20,7 @@ function AuthenticatedWrapper() {
 	useEffect( () => loadManifest( setManifestLoaded ), [] );
 
 	if ( !manifestLoaded ) {
-		return <div>Loading manifest...</div>;
+		return <Loading>Loading manifest...</Loading>;
 	}
 
 	return (

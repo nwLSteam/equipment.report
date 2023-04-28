@@ -17,7 +17,7 @@ function App() {
 	return (
 		<div className="App">
 			<header className="App-header">
-				{authState === AuthState.UNDEFINED && <Loading />}
+				{authState === AuthState.UNDEFINED && <Loading>Loading authentication...</Loading>}
 				{authState === AuthState.NOT_AUTHENTICATED && <AuthButton />}
 				{authState === AuthState.AUTHENTICATED && <AuthenticatedWrapper />}
 			</header>
